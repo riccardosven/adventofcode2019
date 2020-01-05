@@ -1,4 +1,5 @@
-def run(code, invalues=[1]):
+def run(code, invalues=None):
+    "Run intcode computer"
     code = [int(s) for s in code.split(",")]
 
     idx = 0
@@ -84,31 +85,50 @@ def run(code, invalues=[1]):
                 raise Exception("Wrong code")
 
         if code[idx] == 99:
-            return out, code
+            return out
+
+
+def tests():
+    "Run testcases"
+    assert run("3,9,8,9,10,9,4,9,99,-1,8", invalues=[23])[0] == 0
+    assert run("3,9,8,9,10,9,4,9,99,-1,8", invalues=[8])[0] == 1
+    assert run("3,9,7,9,10,9,4,9,99,-1,8", invalues=[8])[0] == 0
+    assert run("3,9,7,9,10,9,4,9,99,-1,8", invalues=[9])[0] == 0
+    assert run("3,9,7,9,10,9,4,9,99,-1,8", invalues=[7])[0] == 1
+    assert run("3,3,1108,-1,8,3,4,3,99", invalues=[8])[0] == 1
+    assert run("3,3,1108,-1,8,3,4,3,99", invalues=[5])[0] == 0
+    assert run("3,3,1107,-1,8,3,4,3,99", invalues=[6])[0] == 1
+    assert run("3,3,1107,-1,8,3,4,3,99", invalues=[9])[0] == 0
+    assert run("3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9",
+               invalues=[0])[0] == 0
+    assert run("3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9",
+               invalues=[-23])[0] == 1
+    assert run("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99",
+               invalues=[23])[0] == 1001
+    assert run("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99",
+               invalues=[8])[0] == 1000
+    assert run("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99",
+               invalues=[5])[0] == 999
+
+
+def star1():
+    "Solution to first star"
+    with open("input", "r") as fin:
+        out = run(fin.readline(), invalues=[1])
+
+    print("Star 1:", out[-1])
+
+
+def star2():
+    "Solution to first star"
+    with open("input", "r") as fin:
+        out = run(fin.readline(), invalues=[5])
+
+    print("Star 2:", out[-1])
 
 
 if __name__ == "__main__":
     if __debug__:
-        print(run("1002,4,3,4,33"))
-        print(run("1101,100,-1,4,0"))
-        print(run("3,0,4,0,99", invalues=[2]))
-        print(run("3,9,8,9,10,9,4,9,99,-1,8", invalues=[23]), "expect = 0")
-        print(run("3,9,8,9,10,9,4,9,99,-1,8", invalues=[8]), "expect = 1")
-        print(run("3,9,7,9,10,9,4,9,99,-1,8", invalues=[8]), "expect = 0")
-        print(run("3,9,7,9,10,9,4,9,99,-1,8", invalues=[9]), "expect = 0")
-        print(run("3,9,7,9,10,9,4,9,99,-1,8", invalues=[7]), "expect = 1")
-        print(run("3,3,1108,-1,8,3,4,3,99", invalues=[8]), "expected = 1")
-        print(run("3,3,1108,-1,8,3,4,3,99", invalues=[5]), "expected = 0")
-        print(run("3,3,1107,-1,8,3,4,3,99", invalues=[6]), "expected = 1")
-        print(run("3,3,1107,-1,8,3,4,3,99", invalues=[9]), "expected = 0")
-        print(run("3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9", invalues=[0]), "expected = 0")
-        print(run("3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9", invalues=[-23]), "expected = 1")
-        print(run("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99", invalues=[23]), "expected=1001")
-        print(run("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99", invalues=[8]), "expected=1000")
-        print(run("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99", invalues=[5]), "expected=999")
-
-    else:
-        with open("input", "r") as fin:
-            out, code = run(fin.readline(), invalues=[5])
-        
-        print(out)
+        tests()
+    star1()
+    star2()
