@@ -1,27 +1,30 @@
+"Day 2: 1202 Program Alarm"
+
+
 def run(code, fix=False, in1=12, in2=2):
     "Run intcode program"
-    code = [int(s) for s in code.split(",")]
+    code = [int(s) for s in code.strip().split(",")]
     if fix:
         code[1] = in1
         code[2] = in2
 
     idx = 0
     while True:
-        if idx < len(code) - 3:
-            addr_op1 = code[idx+1]
-            addr_op2 = code[idx+2]
-            addr_res = code[idx+3]
+        addr_op1 = code[idx+1]
+        addr_op2 = code[idx+2]
+        addr_res = code[idx+3]
 
-            if code[idx] == 1:  # Add
-                code[addr_res] = code[addr_op1] + code[addr_op2]
-            elif code[idx] == 2:  # Mul
-                code[addr_res] = code[addr_op1] * code[addr_op2]
-            else:
-                raise Exception("Wrong code")
-            idx += 4
+        if code[idx] == 1:  # Add
+            code[addr_res] = code[addr_op1] + code[addr_op2]
+        elif code[idx] == 2:  # Mul
+            code[addr_res] = code[addr_op1] * code[addr_op2]
+        else:
+            raise Exception("Wrong code")
+        idx += 4
 
         if code[idx] == 99:  # End
             return code
+
 
 
 def searchfor(code, value=19690720):

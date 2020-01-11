@@ -1,3 +1,6 @@
+"Day 1: The Tyranny of the Rocket Equation"
+
+
 def fuel(mass):
     "Compute fuel required for launch mass"
     return mass//3 - 2

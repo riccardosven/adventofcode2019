@@ -1,23 +1,22 @@
 "Day 6: Universal Orbit Map"
+
+
 from functools import lru_cache
 
 
 class Orbitmap:
     "Map of orbits"
 
-    def __init__(self, str_in=None, file_in=None):
+    def __init__(self, stringmap):
         self.orbits = dict()
-        if not file_in is None:
-            with open(file_in, "r") as fin:
-                for line in fin:
-                    centrum, planet = line.split(")")
-                    self.orbits[planet.strip()] = centrum.strip()
-        elif not str_in is None:
-            for orbit in str_in.split():
-                centrum, planet = orbit.split(")")
-                self.orbits[planet.strip()] = centrum.strip()
-        else:
-            raise ValueError("Missing orbit map")
+        for orbit in stringmap.split():
+            centrum, planet = orbit.split(")")
+            self.orbits[planet.strip()] = centrum.strip()
+
+    @staticmethod
+    def from_file(filename):
+        with open(filename, "r") as fhandle:
+            return Orbitmap(fhandle.read())
 
     @lru_cache(None)
     def countorbits(self, planet):
@@ -68,13 +67,15 @@ def tests():
     assert "".join(orbit_map.jumpsbetween("K", "I")) == "JEDI"
 
 
-def star1(orbit_map):
+def star1():
     "Solution to first star"
+    orbit_map = Orbitmap.from_file("input")
     print("Star 1:", orbit_map.totalorbits())
 
 
-def star2(orbit_map):
+def star2():
     "Solution to second star"
+    orbit_map = Orbitmap.from_file("input")
     start = orbit_map.planet("YOU")
     end = orbit_map.planet("SAN")
     print("Star 2:", len(orbit_map.jumpsbetween(start, end)))
@@ -85,6 +86,5 @@ if __name__ == "__main__":
     if __debug__:
         tests()
 
-    INPUT_MAP = Orbitmap(file_in="input")
-    star1(INPUT_MAP)
-    star2(INPUT_MAP)
+    star1()
+    star2()
