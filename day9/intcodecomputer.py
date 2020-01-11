@@ -63,14 +63,12 @@ def intcodecomputer(program):
             # input
             op1 = readparameter(pctr+1, 0)  # Index is always parameter
             val = yield
-            print("input " + str(val))
             writeparameter(op1, val, par1mode)
             pctr += 2
 
         elif opcode == 4:
             # output
             op1 = readparameter(pctr+1, par1mode)
-            print("output " + str(op1))
             yield op1
             pctr += 2
 
