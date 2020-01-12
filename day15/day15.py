@@ -1,75 +1,81 @@
-from intcodecomputer import IntcodeComputer
+"Day 15: Oxygen System"
+
+import pickle
 from copy import deepcopy
 from collections import deque
-from time import sleep
-import pickle
+from intcodecomputer import IntcodeComputer
 
 NORTH = 1
 SOUTH = 2
 WEST = 3
 EAST = 4
 
-
 def peek(pos, direction):
+    "return position in direction"
     if direction == NORTH:
         return (pos[0], pos[1] - 1)
-    elif direction == SOUTH:
+    if direction == SOUTH:
         return (pos[0], pos[1] + 1)
-    elif direction == EAST:
+    if direction == EAST:
         return (pos[0] + 1, pos[1])
-    elif direction == WEST:
+    if direction == WEST:
         return (pos[0] - 1, pos[1])
-    else:
-        raise Exception("Bad move command")
+    raise Exception("Bad move command")
 
 
 class Robot:
-
-    def __init__(self, program="input", map=None):
+    "Repair droid"
+    def __init__(self, program="input", areamap=None):
         with open(program, 'r') as fin:
             program = "".join(fin.readlines())
         self.brain = IntcodeComputer(program)
         self.pos = (0, 0)
-        self.map = dict() if map is None else map
-        self.map[self.pos] = "."
+        self.areamap = dict() if areamap is None else areamap
+        self.areamap[self.pos] = "."
 
-    def copy(self):
+    def clone(self):
+        "Create a new robot clone"
         other = Robot()
         other.brain = self.brain.copy()
         other.pos = deepcopy(self.pos)
-        other.map = deepcopy(self.map)
+        other.areamap = deepcopy(self.areamap)
 
         return other
 
-    def explored(self, direction):
-        if peek(self.pos, direction) in self.map:
+    def isexplored(self, direction):
+        "Check if a position has been explored"
+        if peek(self.pos, direction) in self.areamap:
             return True
         return False
 
     def move(self, direction):
+        "Move to a new position"
         self.pos = peek(self.pos, direction)
 
     def step(self, direction):
+        "Take one step in a direction"
         retval = self.brain.step(direction)
         oldpos = self.pos
         self.move(direction)
         if retval == 0:
-            self.map[self.pos] = "#"
+            self.areamap[self.pos] = "#"
             self.pos = oldpos
         elif retval == 1:
-            self.map[self.pos] = "."
+            self.areamap[self.pos] = "."
         elif retval == 2:
-            self.map[self.pos] = "O"
+            self.areamap[self.pos] = "O"
         else:
             raise Exception("Error in step")
 
     def show(self, offset=20):
-        printmap = deepcopy(self.map)
+        "Print situation"
+        printmap = deepcopy(self.areamap)
         printmap[self.pos] = "X"
         render(printmap, offset=offset)
 
 
 def render(mapdict, width=40, height=40, offset=20):
+    "Render map"
     plot = [[' ' for _ in range(width)] for _ in range(height)]
     for coord, val in mapdict.items():
         plot[coord[1] + offset][coord[0] + offset] = val
@@ -77,43 +83,45 @@ def render(mapdict, width=40, height=40, offset=20):
 
 
 def maparea():
+    "Map the whole area around the robot"
     outermap = dict()
     robots = deque()
-    robots.append((Robot(map=outermap), []))
+    robots.append((Robot(areamap=outermap), []))
 
     while robots:
         robot, steps = robots.popleft()
         for direction in [NORTH, SOUTH, EAST, WEST]:
-            if robot.explored(direction):
+            if robot.isexplored(direction):
                 continue
-            newbot = robot.copy()
-            newbot.map = outermap
+            newbot = robot.clone()
+            newbot.areamap = outermap
             newbot.step(direction)
-            if newbot.map[newbot.pos] == "O":
+            if newbot.areamap[newbot.pos] == "O":
                 stepsout = steps + [direction]
             robots.append((newbot, steps + [direction]))
 
     return outermap, stepsout
 
-def execute(steps):
-    robot = Robot()
-    for step in steps:
-        robot.step(step)
-    print(robot.map[robot.pos])
 
-def step1():
+def star1():
+    "Solution to first star"
     area, steps = maparea()
     robot = Robot()
     for step in steps:
         robot.step(step)
     assert area[robot.pos] == "O"
-    render(area)
-    print("Steps taken to reach oxygen tank:", len(steps))
+    print("Star 1:", len(steps))
+
+    # Use pickle to skip recomputing the map in step 2
     with open("step1.pickle", "wb") as handle:
         pickle.dump(area, handle)
         pickle.dump(robot.pos, handle)
 
+
 def step2():
+    "Solution to second star"
+
+    # Use map computed in step 1
     with open("step1.pickle", "rb") as handle:
         area = pickle.load(handle)
         oxygenpos = pickle.load(handle)
@@ -130,10 +138,8 @@ def step2():
                 maxtime = max(maxtime, time+1)
                 queue.append((newpos, time+1))
 
-    print("Minutes before oxygen spreads:", maxtime)
-
-
+    print("Star 2:", maxtime)
 
 if __name__ == "__main__":
-    step1()
+    star1()
     step2()
