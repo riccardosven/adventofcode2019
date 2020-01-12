@@ -1,9 +1,13 @@
+"Day 14: Space Stoichiometry"
+
 import re
 import math
 from collections import defaultdict
 
 
 class ReactionTable:
+    "Table of reactions"
+
     def __init__(self, infile):
         regex = re.compile(r"(\d+) (\w+)")
         reactiontable = dict()
@@ -21,6 +25,7 @@ class ReactionTable:
         self.storage = defaultdict(int)
 
     def produce(self, product):
+        "Return amount of ore needed to produce product"
 
         amount, name = product
         ore = 0
@@ -48,48 +53,45 @@ class ReactionTable:
 
         return ore
 
-    def oretoproduce(self, amount):
-        left = 0
-        right = amount
+    def oretoproduce(self, fuelamount):
+        "Find the ore required to produce a certain amount of fuel"
 
-        while left < right:
+        left = 0
+        right = fuelamount
+
+        while left < right:  # Uses bisection search
             mid = (left + right)//2
             orerequired = self.produce((mid, "FUEL"))
-            if orerequired > amount:
+            if orerequired > fuelamount:
                 right = mid
             else:
                 left = mid + 1
         return left - 1
 
 
-def stage1(infile, expect=None):
-    table = ReactionTable(infile)
-    print("Needed ", table.produce((1, "FUEL")), end="")
-    if not expect is None:
-        print("expected ", expect)
-    else:
-        print()
+def tests():
+    testcases1 = [("test1", 165), ("test2",
+                                   13312),  ("test3", 180697), ("test4", 2210736)]
+    for test, exp in testcases1:
+        assert exp == ReactionTable(test).produce((1, "FUEL"))
+
+    testcases2 = [("test2", 82892753), ("test3", 5586022), ("test4", 460664)]
+
+    for test, exp in testcases2:
+        assert exp == ReactionTable(test).oretoproduce(1000000000000)
 
 
-def stage2(infile, expect=None):
-    table = ReactionTable(infile)
-    print("Produced", table.oretoproduce(1000000000000), "fuel", end="")
-    if not expect is None:
-        print("expected ", expect)
-    else:
-        print
+def star1():
+    "Solution to first star"
+    print("Star 1:", ReactionTable("input").produce((1, "FUEL")))
+
+
+def star2():
+    "Solution to second star"
+    print("Star 2:", ReactionTable("input").oretoproduce(1000000000000))
 
 
 if __name__ == "__main__":
-    if __debug__:
-        stage1("test1", expect=165)
-        stage1("test2", expect=13312)
-        stage1("test3", expect=180697)
-        stage1("test4", expect=2210736)
-
-        stage2("test2", expect=82892753)
-        stage2("test3", expect=5586022)
-        stage2("test4", expect=460664)
-    else:
-        stage1("input")
-        stage2("input")
+    tests()
+    star1()
+    star2()
