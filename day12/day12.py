@@ -1,9 +1,9 @@
 "Day 12: The N-Body Problem"
 
 import re
-import numpy as np
 from itertools import combinations
 from math import gcd
+import numpy as np
 
 
 class Moon:
@@ -21,12 +21,13 @@ class Moon:
         return Moon(pos)
 
     def __str__(self):
-        return f"<x={int(self.pos[0])}, y={int(self.pos[1])}, z={int(self.pos[2])}, dx={int(self.vel[0])}, dy={int(self.vel[1])}, dz={int(self.vel[2])}>"
+        return f"<x={int(self.pos[0])}, y={int(self.pos[1])}, z={int(self.pos[2])}, \
+            dx={int(self.vel[0])}, dy={int(self.vel[1])}, dz={int(self.vel[2])}>"
 
     def __repr__(self):
         return f"Moon({list(self.pos)})"
 
-    def computegravity(self, other, axis=[0, 1, 2]):
+    def computegravity(self, other, axis=(0, 1, 2)):
         "Compute gravity interaction"
         if self is other:
             pass
@@ -43,7 +44,7 @@ class Moon:
         self.vel += acceleration
         other.vel -= acceleration
 
-    def applyvelocity(self, axis=[0, 1, 2]):
+    def applyvelocity(self, axis=(0, 1, 2)):
         "Apply velocity to change position"
         for i in axis:
             self.pos[i] = self.pos[i] + self.vel[i]
@@ -62,7 +63,7 @@ class System:
     def __init__(self, moons):
         self.moons = moons
 
-    def step(self, axis=[0, 1, 2]):
+    def step(self, axis=(0, 1, 2)):
         "One simulation step"
         for moon1, moon2 in combinations(self.moons, 2):
             moon1.computegravity(moon2, axis)
