@@ -1,5 +1,7 @@
-from intcodecomputer import IntcodeComputer
+"Day 11: Space Police"
+
 from collections import defaultdict
+from intcodecomputer import IntcodeComputer
 
 
 DIRECTIONS = "<^>v"
