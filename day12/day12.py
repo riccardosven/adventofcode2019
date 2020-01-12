@@ -1,17 +1,22 @@
+"Day 12: The N-Body Problem"
+
+import re
 import numpy as np
 from itertools import combinations
-import re
 from math import gcd
 
 
 class Moon:
+    "Single moon"
+
     def __init__(self, pos):
         self.pos = np.asarray(pos)  # Position
         self.vel = np.zeros(3)  # Velocity
         self.acc = np.zeros(3)
 
     @staticmethod
-    def fromstring(string):
+    def from_string(string):
+        "Create a moon from a string specification"
         pos = list(map(int, re.findall(r'-?\d+', string)))
         return Moon(pos)
 
@@ -21,7 +26,8 @@ class Moon:
     def __repr__(self):
         return f"Moon({list(self.pos)})"
 
-    def computegravity(self, other, axis=[0,1,2]):
+    def computegravity(self, other, axis=[0, 1, 2]):
+        "Compute gravity interaction"
         if self is other:
             pass
 
@@ -37,62 +43,74 @@ class Moon:
         self.vel += acceleration
         other.vel -= acceleration
 
-    def applyvelocity(self, axis=[0,1,2]):
+    def applyvelocity(self, axis=[0, 1, 2]):
+        "Apply velocity to change position"
         for i in axis:
             self.pos[i] = self.pos[i] + self.vel[i]
 
     def energy(self):
+        "Compute moon energy"
         pot = np.sum(np.abs(self.pos))
         kin = np.sum(np.abs(self.vel))
 
         return pot, kin, pot*kin
-    
+
 
 class System:
+    "System of moons"
 
     def __init__(self, moons):
         self.moons = moons
-    
-    def step(self, axis=[0,1,2]):
+
+    def step(self, axis=[0, 1, 2]):
+        "One simulation step"
         for moon1, moon2 in combinations(self.moons, 2):
             moon1.computegravity(moon2, axis)
 
         for moon in self.moons:
             moon.applyvelocity(axis)
-    
+
     def simulate(self, nsteps=100):
-        for _ in range(1, nsteps+1):
+        "Simulate nsteps forward"
+        for _ in range(nsteps):
             self.step()
-    
+
+    def energy(self):
+        "Total energy of the system"
+        totalenergy = 0
+
+        for moon in self.moons:
+            totalenergy += moon.energy()[2]
+
+        return int(totalenergy)
+
     def __str__(self):
         return "".join(map(str, self.moons))
 
-    def findrestart(self, guard = 999999999999999):
+    def findrestart(self, guard=9999999999):
+        "Find when the system restarts"
 
         looptimes = []
 
-        for ax in [0,1,2]:
+        for axs in [0, 1, 2]:  # Simulate independent axes
             seen = set()
-
-            print(self)
             for i in range(guard):
                 if str(self) in seen:
                     looptimes.append(i)
                     break
                 seen.add(str(self))
-                self.step(axis=[ax])
-        
-        lcm = looptimes[0]
+                self.step(axis=[axs])
 
+        lcm = looptimes[0]  # Find least common multiple of repeat times
         for i in looptimes[1:]:
             lcm = lcm*i//gcd(lcm, i)
+
         return lcm
 
 
-
-
-def test1(instring, nsteps=100):
-    moons = System([Moon.fromstring(spec) for spec in instring.split("\n")])
+def tests(instring, nsteps=100):
+    "Testcases"
+    moons = System([Moon.from_string(spec) for spec in instring.split("\n")])
 
     print(f"After {0} steps:")
     for moon in moons.moons:
@@ -114,54 +132,24 @@ def test1(instring, nsteps=100):
         print(f"P = {pot}, K = {kin}, T = {tot}")
 
 
-def stage1():
+def star1():
+    "Solution to first star"
     with open("input", "r") as fin:
-        system = System([Moon.fromstring(spec) for spec in fin.readlines()])
+        system = System([Moon.from_string(spec) for spec in fin.readlines()])
 
     system.simulate(1000)
 
-    totalenergy = 0
+    print("Star 1:", system.energy())
 
-    print("Moon energies")
-    for moon in system.moons:
-        pot, kin, tot = moon.energy()
-        totalenergy += tot
-        print(f"P = {pot}, K = {kin}, T = {tot}")
 
-    print("TOTAL = ", totalenergy)
-    print(system)
-
-        
-
-def stage2():
+def star2():
+    "Solution to second star"
     with open("input", "r") as fin:
-        system = System([Moon.fromstring(spec) for spec in fin.readlines()])
+        system = System([Moon.from_string(spec) for spec in fin.readlines()])
 
-    instring = """<x=-1, y=0, z=2>
-<x=2, y=-10, z=-7>
-<x=4, y=-8, z=8>
-<x=3, y=5, z=-1>"""
-#
-#    instring2 = """<x=-8, y=-10, z=0>
-##<x=5, y=5, z=10>
-##<x=2, y=-7, z=3>
-##<x=9, y=-8, z=-3>"""
-    #system = System([Moon.fromstring(spec) for spec in instring.split("\n")])
+    print("Star 2:", system.findrestart())
 
-    print(system.findrestart())
-
-    
 
 if __name__ == "__main__":
-#    test1("""<x=-1, y=0, z=2>
-#<x=2, y=-10, z=-7>
-#<x=4, y=-8, z=8>
-#<x=3, y=5, z=-1>""")
-#
-#test1("""<x=-8, y=-10, z=0>
-#<x=5, y=5, z=10>
-#<x=2, y=-7, z=3>
-#<x=9, y=-8, z=-3>""", nsteps=100)
-
-    stage1()
-    stage2()
+    star1()
+    star2()
