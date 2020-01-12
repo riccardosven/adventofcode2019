@@ -1,30 +1,12 @@
 from intcodecomputer import IntcodeComputer
-#from oldcomputer import intcodecomputer
-from collections import namedtuple, defaultdict
+from collections import defaultdict
 
 
 DIRECTIONS = "<^>v"
-#Position = namedtuple("Position", ["x", "y"])
-
-
-class DummyBrain:
-    def __init__(self, *args, **kwargs):
-        self.instructions = [1, 0,
-                             0, 0,
-                             1, 0,
-                             1, 0,
-                             0, 1,
-                             1, 0,
-                             1, 0]
-
-    def step(self, *args):
-        try:
-            return self.instructions.pop(0)
-        except Exception:
-            raise StopIteration
 
 
 class Robot:
+    "Hull painting robot"
 
     def __init__(self, code="input"):
         self.pos = (0, 0)
@@ -47,7 +29,6 @@ class Robot:
             self.direction = self.direction - 1 if self.direction > 0 else 3
 
         direction = DIRECTIONS[self.direction]
-        paintcol = "#" if self.hull[self.pos] else "."
         if direction == "<":
             self.pos = (self.pos[0] - 1, self.pos[1])
         elif direction == "^":
@@ -58,24 +39,15 @@ class Robot:
             self.pos = (self.pos[0], self.pos[1] + 1)
 
     def run(self):
+        "Run robot"
         try:
             while True:
                 self.step()
         except StopIteration:
             pass
 
-    def onestep(self):
-        col = "#" if self.hull[self.pos] else "."
-        print(self.pos, col)
-        self.step()
-        self.render()
-
-    def runstep(self):
-        while True:
-            self.onestep()
-            input()
-
-    def render(self, width=50, height=8, offset=1):
+    def render(self, width=43, height=6, offset=0):
+        "Show painted surface"
         field = [["x" for _ in range(width)] for _ in range(height)]
         for pos, col in self.hull.items():
             field[pos[1] + offset][pos[0] + offset] = '#' if col else "."
@@ -87,17 +59,18 @@ class Robot:
 
 
 def step1():
-    print("Solving step 1")
+    "Solution to first star"
     robot = Robot()
     robot.run()
-    print(len(robot.hull))
+    print("Star 1:", len(robot.hull))
+
 
 def step2():
-    print("Solving step 2")
+    "Solution to second star"
     robot = Robot()
-    robot = Robot()
-    robot.hull[robot.pos] = 1
+    robot.hull[robot.pos] = 1  # Start on white panel
     robot.run()
+    print("Star 2:")
     robot.render()
 
 
