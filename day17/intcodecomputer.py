@@ -4,9 +4,9 @@ from copy import deepcopy
 
 
 class IntcodeComputer:
+    "Elven intcode computer"
 
     def __init__(self, program, interactive=False):
-        "Elven intcode computer"
         self.code = defaultdict(int)
         for i, s in enumerate(program.split(",")):
             self.code[i] = int(s)
@@ -94,7 +94,7 @@ class IntcodeComputer:
                 self.pctr += 2
                 #print(chr(op1), end="")
                 self.outval = op1
-                #return op1
+                return op1
 
             elif opcode == 5:
                 # jump-if-true

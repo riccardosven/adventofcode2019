@@ -3,24 +3,25 @@ from intcodecomputer import IntcodeComputer
 class VacuumRobot:
     "ASCIIRobot"
     def __init__(self):
-        with open("input", 'r') as fin:
-            program = "".join(fin.readlines())
+        with open("input", 'r') as fhandle:
+            program = fhandle.read().strip()
             self.map = None
             self.brain = IntcodeComputer(program)
     
-    def getmap(self, show = True):
+    def getmap(self):
+        "Explore area to find alignment parameters"
         view = []
         try:
             while True:
                 char = chr(self.brain.step(None))
-                print(char)
-                out.append(char)
+                view.append(char)
         except StopIteration:
             pass
-
         
         view = list("".join(view).strip().split("\n"))
+        width = len(view[0])
         height = sum(1 for row in view if len(row) == len(view[0]))
+        assert height == len(view)
         alignpar = 0
         
         for i in range(len(view)):
@@ -33,11 +34,9 @@ class VacuumRobot:
                     neigbors += 1 if j < width-1 and view[i][j+1] == "#" else 0
                     if neigbors == 4:
                         alignpar += i*j
-                        view[i][j] = "O"
         
-        print("Alignment parameter:", alignpar)
         self.map = view
-        return view
+        return alignpar
 
     def showmap(self):
         "print map from viewport"
@@ -49,9 +48,8 @@ class VacuumRobot:
             self.brain.step(ord(instruction))
 
     
-    def override(self, program, funcA, funcB, funcC, video="n"):
+    def override(self, program, funcA, funcB, funcC, video="y"):
         self.brain.code[0] = 2
-        self.override()
 
         # Main Program
         self.execute(program)
@@ -69,21 +67,19 @@ class VacuumRobot:
         self.execute(video+"\n")
 
         while True:
-            self.brain.step(None)
+            self.brain.step(0)
 
 
 
 
 def star1():
     bot = VacuumRobot()
-    bot.getmap()
-    #bot = VacuumRobot()
-    #bot.showmap()
+    print("Star 1:", bot.getmap())
 
 def star2():
     bot = VacuumRobot()
     try:
-        bot.interactive("A,B,A,C,B,C,A,C,B,C\n", "L,8,R,10,L,10\n", "R,10,L,8,L,8,L,10\n", "L,4,L,6,L,8,L,8\n")
+        bot.override("A,B,A,C,B,C,A,C,B,C\n", "L,8,R,10,L,10\n", "R,10,L,8,L,8,L,10\n", "L,4,L,6,L,8,L,8\n")
     except StopIteration:
         pass
     print(bot.brain.outval)
