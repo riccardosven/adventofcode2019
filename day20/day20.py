@@ -1,9 +1,12 @@
+"Day 20: Donut Maze"
+
 import sys
 from collections import defaultdict, deque
 from copy import deepcopy
 
 
 def parseinput(inputfile):
+    "Parses an input file to return a map structure"
 
     grid = [list(row) for row in inputfile.readlines()]
 
@@ -30,20 +33,20 @@ def parseinput(inputfile):
                     neighbors[(i, j)].add((1, j-1))
                     neighbors[(i, j-1)].add((i, j))
                 if grid[i-1][j] == grid[i-2][j] == "A" or \
-                    grid[i+1][j] == grid[i+2][j] == "A" or \
-                    grid[i][j+1] == grid[i][j+2] == "A" or \
-                    grid[i][j-1] == grid[i][j-2] == "A":
+                        grid[i+1][j] == grid[i+2][j] == "A" or \
+                        grid[i][j+1] == grid[i][j+2] == "A" or \
+                        grid[i][j-1] == grid[i][j-2] == "A":
                     startingpoint = (i, j)
                 elif grid[i-1][j] == grid[i-2][j] == "Z" or \
-                    grid[i+1][j] == grid[i+2][j] == "Z" or \
-                    grid[i][j+1] == grid[i][j+2] == "Z" or \
-                    grid[i][j-1] == grid[i][j-2] == "Z":
+                        grid[i+1][j] == grid[i+2][j] == "Z" or \
+                        grid[i][j+1] == grid[i][j+2] == "Z" or \
+                        grid[i][j-1] == grid[i][j-2] == "Z":
                     endingpoint = (i, j)
                 elif grid[i-1][j].isupper() and grid[i-2][j].isupper():
                     if i < height//2:
                         outerportal[grid[i-2][j] + grid[i-1][j]] = (i, j)
                     else:
-                        innerportal[grid[i-2][j] + grid[i-1][j]]= (i, j)
+                        innerportal[grid[i-2][j] + grid[i-1][j]] = (i, j)
                 elif grid[i+1][j].isupper() and grid[i+2][j].isupper():
                     if i < height//2:
                         innerportal[grid[i+1][j] + grid[i+2][j]] = (i, j)
@@ -59,66 +62,83 @@ def parseinput(inputfile):
                         innerportal[grid[i][j+1] + grid[i][j+2]] = (i, j)
                     else:
                         outerportal[grid[i][j+1] + grid[i][j+2]] = (i, j)
-    
-    #for name, location in innerportal.items():
-    #    neighbors[location].add(outerportal[name])
-    #    neighbors[outerportal[name]].add(location)
 
     return neighbors, startingpoint, endingpoint, innerportal, outerportal
 
-def navigate(neighbors, startingpoint, endingpoint, innerportal, outerportal):
+
+def navigate(donutstructure):
+    "Navigates the map structure to find best route using BFS"
+
+    neighbors, startingpoint, endingpoint, innerportal, outerportal = donutstructure
 
     neighbors = deepcopy(neighbors)
     for name, location in innerportal.items():
         neighbors[location].add(outerportal[name])
         neighbors[outerportal[name]].add(location)
     bfs = deque([(startingpoint, 0, set())])
-    beststeps = None
     while bfs:
         pos, steps, visited = bfs.popleft()
         if pos == endingpoint:
-            if beststeps is None or steps < beststeps:
-                beststeps = steps
+            return steps
         for nextpos in neighbors[pos]:
             if nextpos in visited:
                 continue
             bfs.append((nextpos, steps+1, visited.union([nextpos])))
-    return beststeps
-                
-def navigaterecursive(neighbors, startingpoint, endingpoint, innerportal, outerportal, maxdepth=10):
-    bfs = deque([((startingpoint, 0), 0, set() )])
-    beststeps = None
+
+
+def navigaterecursive(donutstructure, maxdepth=10):
+    "Applies BFS with recursive portals (Tracks the level in the recursive structure)"
+
+    neighbors, startingpoint, endingpoint, innerportal, outerportal = donutstructure
+
+    bfs = deque([((startingpoint, 0), 0, set())])
     oldlvl = None
     while bfs:
         (pos, lvl), steps, visited = bfs.popleft()
         if not lvl == oldlvl:
             oldlvl = lvl
-            print(lvl)
         if lvl > maxdepth:
             continue
         if pos == endingpoint and lvl == 0:
-            if beststeps is None or steps < beststeps:
-                beststeps = steps
+            return steps
         for nextpos in neighbors[pos]:
             if (nextpos, lvl) in visited:
                 continue
-            bfs.append(((nextpos, lvl), steps+1, visited.union([(nextpos, lvl)])))
+            bfs.append(((nextpos, lvl), steps+1,
+                        visited.union([(nextpos, lvl)])))
         if lvl > 0:
             for name, loc in outerportal.items():
                 if loc == pos:
                     nextpos = innerportal[name]
                     if (nextpos, lvl-1) not in visited:
-                        bfs.append(((nextpos, lvl-1), steps+1, visited.union([(nextpos, lvl-1)])))
+                        bfs.append(((nextpos, lvl-1), steps+1,
+                                    visited.union([(nextpos, lvl-1)])))
         for name, loc in innerportal.items():
             if loc == pos:
                 nextpos = outerportal[name]
                 if (nextpos, lvl+1) not in visited:
-                    bfs.append(((nextpos, lvl+1), steps+1, visited.union([(nextpos, lvl+1)])))
+                    bfs.append(((nextpos, lvl+1), steps+1,
+                                visited.union([(nextpos, lvl+1)])))
 
-    return beststeps
-                
+
+def test():
+    "Handle testcases"
+    with open(sys.argv[1]) as fhandle:
+        print(navigate(parseinput(fhandle)))
+
+
+def star1():
+    "Solution to first star"
+    with open("input") as fhandle:
+        print("Star 1:", navigate(parseinput(fhandle)))
+
+
+def star2():
+    "Solution to second star"
+    with open("input") as fhandle:
+        print("Star 2:", navigaterecursive(parseinput(fhandle), maxdepth=25))
+
 
 if __name__ == "__main__":
-    with open(sys.argv[1]) as fhandle:
-        #print(navigate(*parseinput(fhandle)))
-        print(navigaterecursive(*parseinput(fhandle), maxdepth=int(sys.argv[2])))
+    star1()
+    star2()
